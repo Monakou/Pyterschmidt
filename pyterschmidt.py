@@ -1,3 +1,27 @@
+
+#  MIT License
+#
+#  Copyright (c) 2020 E. G. Bland <egb528@york.ac.uk>
+#
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#
+#  The above copyright notice and this permission notice shall be included in all
+#  copies or substantial portions of the Software.
+#
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+#  SOFTWARE.
+#
+
 import re
 import json
 from os import path
@@ -59,7 +83,14 @@ class RedditModule(DiscordMessageModule):
                 print("User %d has %d karma." % (u["user"], u["karma"]))
 
     async def __do_karma(self, message):
-        pass  # TODO don't forget to implement this!
+        karma = 0
+        karmas = self.__karmas[message.guild.id]
+        print(karmas)
+        print(karmas[0])
+        print(message.author.id)
+        if message.author.id in map(lambda x: x["user"], karmas):
+            karma = karmas[message.author.id]
+        await message.channel.send("You have %d karma." % karma)
 
     async def __do_karmalist(self, message):
         pass  # TODO don't forget to implement this!
