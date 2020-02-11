@@ -1,6 +1,5 @@
 import sys
 import discord
-import re
 import pyterschmidt as ps
 
 
@@ -27,5 +26,6 @@ async def on_ready():
     print("Connected.")
     if len(modules) == 0:
         modules.append(ps.TestModule(client))
+        modules.append(ps.RedditModule(client))
 
 client.run(token)
