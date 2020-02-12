@@ -25,6 +25,7 @@
 import sys
 import discord
 import pyterschmidt as ps
+import reddit
 
 
 if len(sys.argv) < 2:
@@ -33,23 +34,43 @@ if len(sys.argv) < 2:
 
 token = sys.argv[1]
 
-modules = []
+message_modules = []
+react_modules = []
 
 client = discord.Client()
 
 
 @client.event
 async def on_message(message):
+    print("on_message fired")
     print("%s: %s" % (message.author.name, message.content))
     if 676504078309785601 in map(lambda x: x.id, message.mentions):
-        for module in modules:
+        for module in message_modules:
             await module.doaction(message)
+
+
+@client.event
+async def on_reaction_add(reaction, user):
+    print("on_reaction_add fired")
+    for module in react_modules:
+        await module.do_reaction_add(reaction, user)
+
+
+@client.event
+async def on_reaction_remove(reaction, user):
+    print("on_reaction_remove fired")
+    for module in react_modules:
+        await module.do_reaction_remove(reaction, user)
+
 
 @client.event
 async def on_ready():
     print("Connected.")
-    if len(modules) == 0:
-        modules.append(ps.TestModule(client))
-        modules.append(ps.RedditModule(client))
+    if len(message_modules) == 0:
+        message_modules.append(ps.TestModule(client))
+
+        red = reddit.Reddit(client)
+        message_modules.append(ps.RedditModule(client, red))
+        react_modules.append(ps.RedditReactModule(client, red))
 
 client.run(token)
