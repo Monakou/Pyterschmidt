@@ -24,6 +24,7 @@
 
 import discord
 import re
+import random
 
 
 class DiscordMessageModule:
@@ -118,6 +119,24 @@ class RedditModule(DiscordMessageModule):
             if the_user:
                 the_embed.add_field(name="%s#%s" % (the_user.name, the_user.discriminator), value=karma, inline=False)
         await message.channel.send(embed=the_embed)
+
+
+class CouncilModule(DiscordMessageModule):
+    __valid_emotes = ["HarryTeemo", "HarryKuma", "HarryHoliday", "Harrygasm", "HarryUncaring"]
+    __emote_map = {}
+
+    def __init__(self, client):
+        thecommands = ["council"]
+        thesyntaxs = {"council": "council"}
+        thepermissions = {"council": []}
+        thefunctions = {"council": self.__do_council}
+        super().__init__(client, thecommands, thesyntaxs, thepermissions, thefunctions)
+
+        for guild in client.guilds:
+            self.__emote_map[guild.id] = {k: v for (k, v) in map(lambda x: (x.name, x.id), guild.emojis)}
+
+    async def __do_council(self, message):
+        matcher = re.search("council (.*)", message.content)
 
 
 class TestModule(DiscordMessageModule):

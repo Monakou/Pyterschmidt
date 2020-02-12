@@ -68,6 +68,7 @@ async def on_ready():
     print("Connected.")
     if len(message_modules) == 0:
         message_modules.append(ps.TestModule(client))
+        message_modules.append(ps.CouncilModule(client))
 
         red = reddit.Reddit(client)
         message_modules.append(ps.RedditModule(client, red))
