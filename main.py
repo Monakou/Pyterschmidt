@@ -44,7 +44,7 @@ client = discord.Client()
 async def on_message(message):
     print("on_message fired")
     print("%s: %s" % (message.author.name, message.content))
-    if 676504078309785601 in map(lambda x: x.id, message.mentions):
+    if client.user.id in map(lambda x: x.id, message.mentions):
         for module in message_modules:
             await module.doaction(message)
 
