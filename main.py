@@ -69,9 +69,9 @@ async def on_ready():
     if len(message_modules) == 0:
         message_modules.append(ps.TestModule(client))
         message_modules.append(ps.CouncilModule(client))
+        message_modules.append(ps.SamHydeModule(client))
 
         red = reddit.Reddit(client)
         message_modules.append(ps.RedditModule(client, red))
         react_modules.append(ps.RedditReactModule(client, red))
-
 client.run(token)

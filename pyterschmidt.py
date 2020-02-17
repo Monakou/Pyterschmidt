@@ -24,7 +24,7 @@
 
 import discord
 import re
-import random
+import asyncio
 
 
 class DiscordMessageModule:
@@ -94,6 +94,26 @@ class RedditReactModule(DiscordReactModule):
 
         if reaction.emoji.name == "downvote":
             self.__reddit.upvote_user(reaction.message.guild, reaction.message.author)
+
+
+class SamHydeModule(DiscordMessageModule):
+    def __init__(self, client):
+        thecommands = ["samhyde"]
+        thesyntaxs = {"samhyde": "samhyde$"}
+        thepermissions = {"samhyde": []}
+        thefunctions = {"samhyde": self.__do_sam_hyde}
+        super().__init__(client, thecommands, thesyntaxs, thepermissions, thefunctions)
+
+    async def __do_sam_hyde(self, message):
+        channel = message.author.voice.voice_channel
+        if channel:
+            my_channel = await super()._getclient().join_voice_channel(channel)
+            player = my_channel.create_ffmpeg_player("samhyde.mp3")
+            player.start()
+            while not player.is_done():
+                await asyncio.sleep(1)
+            player.stop()
+            await my_channel.disconnect()
 
 
 class RedditModule(DiscordMessageModule):
