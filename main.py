@@ -69,7 +69,7 @@ async def on_ready():
     if len(message_modules) == 0:
         message_modules.append(ps.TestModule(client))
         message_modules.append(ps.CouncilModule(client))
-        message_modules.append(ps.SamHydeModule(client))
+        message_modules.append(ps.SoundModule(client))
 
         red = reddit.Reddit(client)
         message_modules.append(ps.RedditModule(client, red))

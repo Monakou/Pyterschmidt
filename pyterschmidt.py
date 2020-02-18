@@ -25,6 +25,7 @@
 import discord
 import re
 import asyncio
+import os
 
 
 class DiscordMessageModule:
@@ -96,42 +97,66 @@ class RedditReactModule(DiscordReactModule):
             self.__reddit.upvote_user(reaction.message.guild, reaction.message.author)
 
 
-class SamHydeModule(DiscordMessageModule):
+class SoundModule(DiscordMessageModule):
     def __init__(self, client):
-        thecommands = ["samhyde", "samhydeloop"]
-        thesyntaxs = {"samhyde": "samhyde$", "samhydeloop": "samhydeloop$"}
-        thepermissions = {"samhyde": [], "samhydeloop": []}
-        thefunctions = {"samhyde": self.__do_sam_hyde, "samhydeloop": self.__do_sam_hyde_loop}
+        sounds = filter(lambda f: f.endswith(".wav"), os.listdir("sounds"))
+
+        thecommands = []
+        thesyntaxs = {}
+        thepermissions = {}
+        thefunctions = {}
+
+        for sound in sounds:
+            name = os.path.splitext(sound)[0]
+            thecommands.append(name)
+            thecommands.append(name + " loop")
+            thesyntaxs[name] = name + "$"
+            thesyntaxs[name + " loop"] = name + " loop$"
+            thepermissions[name] = []
+            thepermissions[name + " loop"] = []
+            thefunctions[name] = self.__curry_sound_function(os.path.join("sounds", sound))
+            thefunctions[name + " loop"] = self.__curry_sound_function_loop(os.path.join("sounds", sound))
+        print(thecommands)
+        print(thesyntaxs)
+        print(thefunctions)
         super().__init__(client, thecommands, thesyntaxs, thepermissions, thefunctions)
 
-    async def __do_play_wav(self, wav, voice_channel):
-        audio_source = discord.PCMAudio(open(wav, "r+b"))
-        voice_channel.play(audio_source)
+    async def __do_play_source(self, source, voice_channel):
+        voice_channel.play(source)
         while voice_channel.is_playing():
             await asyncio.sleep(1)
         voice_channel.stop()
 
-    async def __do_sam_hyde_loop(self, message):
-        channel = message.author.voice.channel
-        if channel:
-            my_channel = await channel.connect()
-            try:
-                if my_channel:
-                    while True:
-                        await self.__do_play_wav("samhyde.wav", my_channel)
-            except:
-                await my_channel.disconnect()
+    async def __do_play_wav(self, wav, voice_channel):
+        return await self.__do_play_source(discord.PCMAudio(open(wav, "r+b")), voice_channel)
 
-    async def __do_sam_hyde(self, message):
-        channel = message.author.voice.channel
-        if channel:
-            my_channel = await channel.connect()
-            try:
-                if my_channel:
-                    await self.__do_play_wav("samhyde.wav", my_channel)
-                    await my_channel.disconnect()
-            except:
-                await my_channel.disconnect()
+    def __curry_sound_function(self, sound):
+        async def the_fn(message):
+            channel = message.author.voice.channel
+            if channel:
+                voice_channel = await channel.connect()
+                try:
+                    if voice_channel:
+                        await self.__do_play_wav(sound, voice_channel)
+                        await voice_channel.disconnect()
+                except Exception as e:
+                    print(e)
+                    await voice_channel.disconnect()
+        return the_fn
+
+    def __curry_sound_function_loop(self, sound):
+        async def the_fn(message):
+            channel = message.author.voice.channel
+            if channel:
+                voice_channel = await channel.connect()
+                try:
+                    if voice_channel:
+                        while True:
+                            await self.__do_play_wav(sound, voice_channel)
+                except Exception as e:
+                    print(e)
+                    await voice_channel.disconnect()
+        return the_fn
 
 
 class RedditModule(DiscordMessageModule):
