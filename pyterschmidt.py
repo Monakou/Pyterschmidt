@@ -111,7 +111,7 @@ class SoundModule(DiscordMessageModule):
             thecommands.append(name)
             thecommands.append(name + " loop")
             thesyntaxs[name] = name + "$"
-            thesyntaxs[name + " loop"] = name + " loop$"
+            thesyntaxs[name + " loop"] = "(" + name + "\\s?loop|loop\\s" + name + ")$"
             thepermissions[name] = []
             thepermissions[name + " loop"] = []
             thefunctions[name] = self.__curry_sound_function(os.path.join("sounds", sound))
