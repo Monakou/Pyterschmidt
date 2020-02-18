@@ -98,22 +98,40 @@ class RedditReactModule(DiscordReactModule):
 
 class SamHydeModule(DiscordMessageModule):
     def __init__(self, client):
-        thecommands = ["samhyde"]
-        thesyntaxs = {"samhyde": "samhyde$"}
-        thepermissions = {"samhyde": []}
-        thefunctions = {"samhyde": self.__do_sam_hyde}
+        thecommands = ["samhyde", "samhydeloop"]
+        thesyntaxs = {"samhyde": "samhyde$", "samhydeloop": "samhydeloop$"}
+        thepermissions = {"samhyde": [], "samhydeloop": []}
+        thefunctions = {"samhyde": self.__do_sam_hyde, "samhydeloop": self.__do_sam_hyde_loop}
         super().__init__(client, thecommands, thesyntaxs, thepermissions, thefunctions)
 
-    async def __do_sam_hyde(self, message):
-        channel = message.author.voice.voice_channel
+    async def __do_play_wav(self, wav, voice_channel):
+        audio_source = discord.PCMAudio(open(wav, "r+b"))
+        voice_channel.play(audio_source)
+        while voice_channel.is_playing():
+            await asyncio.sleep(1)
+        voice_channel.stop()
+
+    async def __do_sam_hyde_loop(self, message):
+        channel = message.author.voice.channel
         if channel:
-            my_channel = await super()._getclient().join_voice_channel(channel)
-            player = my_channel.create_ffmpeg_player("samhyde.mp3")
-            player.start()
-            while not player.is_done():
-                await asyncio.sleep(1)
-            player.stop()
-            await my_channel.disconnect()
+            my_channel = await channel.connect()
+            try:
+                if my_channel:
+                    while True:
+                        await self.__do_play_wav("samhyde.wav", my_channel)
+            except:
+                await my_channel.disconnect()
+
+    async def __do_sam_hyde(self, message):
+        channel = message.author.voice.channel
+        if channel:
+            my_channel = await channel.connect()
+            try:
+                if my_channel:
+                    await self.__do_play_wav("samhyde.wav", my_channel)
+                    await my_channel.disconnect()
+            except:
+                await my_channel.disconnect()
 
 
 class RedditModule(DiscordMessageModule):
