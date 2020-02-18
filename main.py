@@ -43,7 +43,6 @@ client = discord.Client()
 @client.event
 async def on_message(message):
     print("on_message fired")
-    print("%s: %s" % (message.author.name, message.content))
     if client.user.id in map(lambda x: x.id, message.mentions):
         for module in message_modules:
             await module.doaction(message)

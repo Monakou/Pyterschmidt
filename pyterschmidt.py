@@ -101,10 +101,10 @@ class SoundModule(DiscordMessageModule):
     def __init__(self, client):
         sounds = filter(lambda f: f.endswith(".wav"), os.listdir("sounds"))
 
-        thecommands = []
-        thesyntaxs = {}
-        thepermissions = {}
-        thefunctions = {}
+        thecommands = ["sound list"]
+        thesyntaxs = {"sound list": "(sound list|soundlist)$"}
+        thepermissions = {"sound list": []}
+        thefunctions = {"sound list": self.__do_list_sounds}
 
         for sound in sounds:
             name = os.path.splitext(sound)[0]
@@ -116,10 +116,14 @@ class SoundModule(DiscordMessageModule):
             thepermissions[name + " loop"] = []
             thefunctions[name] = self.__curry_sound_function(os.path.join("sounds", sound))
             thefunctions[name + " loop"] = self.__curry_sound_function_loop(os.path.join("sounds", sound))
-        print(thecommands)
-        print(thesyntaxs)
-        print(thefunctions)
         super().__init__(client, thecommands, thesyntaxs, thepermissions, thefunctions)
+
+    async def __do_list_sounds(self, message):
+        sounds = list(map(lambda l: os.path.splitext(l)[0], filter(lambda f: f.endswith(".wav"), os.listdir("sounds"))))
+        msg = "```\nAvailable sounds:\n"
+        msg += '\n'.join(sounds)
+        msg += "```"
+        await message.channel.send(msg)
 
     async def __do_play_source(self, source, voice_channel):
         voice_channel.play(source)
