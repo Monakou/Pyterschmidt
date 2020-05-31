@@ -26,6 +26,7 @@ import discord
 import re
 import asyncio
 import os
+import random
 
 
 class DiscordMessageModule:
@@ -83,17 +84,29 @@ class RedditReactModule(DiscordReactModule):
         self.__reddit = reddit
 
     async def do_reaction_add(self, reaction, user):
-        if reaction.emoji.name == "upvote":
+        the_reaction = None
+        if isinstance(reaction.emoji, str):
+            the_reaction = reaction.emoji
+        else:
+            the_reaction = reaction.emoji.name
+
+        if the_reaction == "upvote":
             self.__reddit.upvote_user(reaction.message.guild, reaction.message.author)
 
-        if reaction.emoji.name == "downvote":
+        if the_reaction == "downvote":
             self.__reddit.downvote_user(reaction.message.guild, reaction.message.author)
 
     async def do_reaction_remove(self, reaction, user):
-        if reaction.emoji.name == "upvote":
+        the_reaction = None
+        if isinstance(reaction.emoji, str):
+            the_reaction = reaction.emoji
+        else:
+            the_reaction = reaction.emoji.name
+
+        if the_reaction == "upvote":
             self.__reddit.downvote_user(reaction.message.guild, reaction.message.author)
 
-        if reaction.emoji.name == "downvote":
+        if the_reaction == "downvote":
             self.__reddit.upvote_user(reaction.message.guild, reaction.message.author)
 
 
@@ -179,13 +192,16 @@ class RedditModule(DiscordMessageModule):
         await message.channel.send("You have %d karma." % self.__reddit.get_karma(message.guild, message.author))
 
     async def __do_karmalist(self, message):
-        karmas_sorted = {k: v for k, v in sorted(self.__reddit.get_karmas(message.guild).items(), key=lambda x: x[1], reverse=True)}
-        the_embed = discord.Embed(title="Reddit Leaderboard", type="rich")
-        for (user, karma) in karmas_sorted.items():
-            the_user = super()._getclient().get_user(user)
-            if the_user:
-                the_embed.add_field(name="%s#%s" % (the_user.name, the_user.discriminator), value=karma, inline=False)
-        await message.channel.send(embed=the_embed)
+        karmas_sorted = [(k, v) for k, v in sorted(self.__reddit.get_karmas(message.guild).items(), key=lambda x: x[1], reverse=True)]
+
+        for i in range(0, int(1+len(karmas_sorted)/15)):
+            karma_chunk = karmas_sorted[i*15:(i+1)*15]
+            the_embed = discord.Embed(title="Reddit Leaderboard, page %d" % (i+1), type="rich")
+            for (user, karma) in karma_chunk:
+                the_user = super()._getclient().get_user(user)
+                if the_user:
+                    the_embed.add_field(name="%s#%s" % (the_user.name, the_user.discriminator), value=karma, inline=False)
+            await message.channel.send(embed=the_embed)
 
 
 class CouncilModule(DiscordMessageModule):
@@ -216,3 +232,24 @@ class TestModule(DiscordMessageModule):
 
     async def __do_peter(self, message):
         await message.channel.send("PEEEEETAAAAAAAAAAH")
+
+
+class CatModule(DiscordMessageModule):
+    __cats = {}
+
+    def __init__(self, client):
+        thecommands = ["cat"]
+        thesyntaxs = {"cat": "cat$"}
+        thepermissions = {"cat": []}
+        thefunctions = {"cat": self.__do_cat}
+        super().__init__(client, thecommands, thesyntaxs, thepermissions, thefunctions)
+        self.__load_cats()
+
+    def __load_cats(self):
+        the_directory = "./cats"
+        cats = filter(lambda f: f.endswith(".png"), os.listdir(the_directory))
+        self.__cats = list(map(lambda c: c[0:-4], cats))
+
+    async def __do_cat(self, message):
+        the_cat = "./cats/%s.png" % random.choice(self.__cats)
+        the_embed = discord.Embed(type="rich")

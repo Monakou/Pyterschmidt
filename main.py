@@ -69,6 +69,7 @@ async def on_ready():
         message_modules.append(ps.TestModule(client))
         message_modules.append(ps.CouncilModule(client))
         message_modules.append(ps.SoundModule(client))
+        # message_modules.append(ps.CatModule(client))
 
         red = reddit.Reddit(client)
         message_modules.append(ps.RedditModule(client, red))
